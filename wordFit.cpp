@@ -176,17 +176,6 @@ vector<vector <string> > findCombo(string word)
 	return retCombo;
 }
 
-vector<string> copyArray(vector<string> nList)
-{
-	vector<string> retList;
-	for(int i=0;i<nList.size();i++)
-	{
-		retList.push_back(nList[i]);
-	}
-	
-	return retList;
-}
-
 //Return lowercase string version of the given string
 string lowerString(string word)
 {
@@ -201,6 +190,7 @@ string lowerString(string word)
  
 int main()
 {	
+	//Read in the words from words.txt
 	vector<string> wordList;
 	fstream f;
 	f.open("words.txt");
@@ -215,26 +205,33 @@ int main()
 	}
 	f.close();
 	
-	time_t temp = time(0);
+	//For each word in the list run it through findCombo
 	vector<vector <string> > elementWordList;
 	for (int i=0;i<wordListLen;i++)
 	{
+		//Print each word returned from findCombo
+		//Find combo returns a list of list of strings
+		//each list of strings is a reconstruction of the word using elemental symbols
 		elementWordList = findCombo(wordList[i]);
 		for (int t=0;t<elementWordList.size();t++)
 		{
+			//Concatenate the elemental symbol strings into original word
 			string curWord = "";
 			for (int m=0;m<elementWordList.at(t).size();m++)
 			{
 				curWord.append(elementWordList.at(t).at(m));
 			}
 			
+			//If there was a problem then alert the user
 			if (lowerString(curWord).compare(lowerString(wordList[i])) != 0)
 			{
-				cout << "Problem" << endl;
+				cout << "This word was not reconstructred properly" << endl;
 				cout << wordList[i] << endl;
 				cout << curWord << endl;
+				cout << "Please report this error to alecmoore001@gmail.com" << endl;
 				return 0;
 			}
+			//Otherwise just print the resulting concatenation
 			else
 			{
 				cout << curWord << endl;
