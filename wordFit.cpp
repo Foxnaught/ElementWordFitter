@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <string.h>
 
 using namespace std;
 
@@ -120,35 +121,55 @@ string elementSymbols[] = {"Ac",
 	"Zn",
 	"Zr"};
 
-struct result
-{
-	vector<string> elementList;
-	int duplicateCount;
-};
+//Record length of element symbol list
+int elemLen = sizeof(elementSymbols)/sizeof(elementSymbols[0]);
 
-void printArray(vector<string> nList)
+//For a given word, return a list of lists
+//Each list element is a list of element symbols that match the word string when concatenated
+vector<vector <string> > findCombo(string word)
 {
-	int i;
-	for(i=0;i<nList.size();i++)
+	vector<vector <string> > retCombo;
+	int wordLen = word.length();
+	//Loop through all element symbols
+	for(int i=0;i<elemLen;i++)
 	{
-		cout << nList[i] << endl;
-	}
-	printf("\n");
-}
-
-//As we return results in our recursive function, we only want to return the most unique combination of elemental symbols
-//Each time a result is found it will only be returned if its uniqueness (1/number of duplicates) is greater than the lowest combination
-int comboUniqueVal;
-vector<result> findCombo(string word)
-{
-	vector<result> retCombo;
-	
-	int i;
-	for(i=0;i<elementSymbols.length();i++)
-	{
-		if(word[0] == elementSymbols[i])
+		//If the word is smaller than the elementSymbol than don't bother trying
+		if (word.length() >= elementSymbols[i].length())
 		{
+			//Make sure characters match
+			bool found = true;
+			int elemLen = elementSymbols[i].length();
+			for (int t=0;t<elemLen;t++)
+			{
+				if (tolower(elementSymbols[i][t]) != tolower(word[t]))
+					found = false;
+			}
 			
+			//If the elemental symbol can fit in the first part of the word
+			if (found)
+			{
+				//If the word length is equal to the element symbol then simply add the element to the combo list to be return no recursion
+				if (word.length() == elementSymbols[i].length())
+				{
+					vector<string> curElemVector;
+					curElemVector.push_back(elementSymbols[i]);
+					retCombo.push_back(curElemVector);
+				}
+				//Otherwise recurse and add the current element to each item in the result and append that to the current result list
+				else
+				{
+					//Send remaining part of word into recursive function
+					//For each result append the current element symbol and append it to each item
+					//Append the resulting elements to retCombos to be returned
+					vector<vector<string> > retElemVector = findCombo(word.substr(elemLen, wordLen-elemLen));
+					for (int m=0;m<retElemVector.size();m++)
+					{
+						vector<string> curElemVector = retElemVector.at(m);
+						curElemVector.insert(curElemVector.begin(), elementSymbols[i]);
+						retCombo.push_back(curElemVector);
+					}
+				}
+			}
 		}
 	}
 	
@@ -158,8 +179,7 @@ vector<result> findCombo(string word)
 vector<string> copyArray(vector<string> nList)
 {
 	vector<string> retList;
-	int i;
-	for(i=0;i<nList.size();i++)
+	for(int i=0;i<nList.size();i++)
 	{
 		retList.push_back(nList[i]);
 	}
@@ -167,99 +187,62 @@ vector<string> copyArray(vector<string> nList)
 	return retList;
 }
 
-//Returns true if stringA is alphabetically higher than stringB
-bool alphaCheck(string stringA, string stringB)
+//Return lowercase string version of the given string
+string lowerString(string word)
 {
-	int i;
-	for(i=0;i<stringA.length();i++)
+	string retWord = "";
+	for (int i=0;i<word.length();i++)
 	{
-		if(stringA[i] < stringB[i])
-		{
-			return true;
-		}
-		if(stringA[i] > stringB[i])
-		{
-			return false;
-		}
+		retWord.append(1, tolower(word[i]));
 	}
 	
-	return false;
+	return retWord;
 }
-
-vector<string> quickSort(vector<string> nList)
-{
-	vector<string> quickList = copyArray(nList);
-	int sortIndex = rand() % nList.size();
-	string sortValue = nList[sortIndex];
-	
-	vector<string> leftSort;
-	vector<string> rightSort;
-	//List of values equal to the index value, there will be no need to sort these just put them between the left and right sorts.
-	vector<string> centerList;
-	
-	int i;
-	for(i=0;i<nList.size();i++)
-	{
-		if(nList[i].length() > sortValue.length())
-		{
-			rightSort.push_back(nList[i]);
-		}
-		else if(nList[i].length() == sortValue.length())
-		{
-			centerList.push_back(nList[i]);
-		}
-		else
-		{
-			leftSort.push_back(nList[i]);
-		}
-	}
-	
-	if(rightSort.size() > 1)
-		rightSort = quickSort(rightSort);
-	if(leftSort.size() > 1)
-		leftSort = quickSort(leftSort);
-	
-	vector<string> totalSort;
-	for(i=0;i<leftSort.size();i++)
-	{
-		totalSort.push_back(leftSort[i]);
-	}
-	
-	for(i=0;i<centerList.size();i++)
-	{
-		totalSort.push_back(centerList[i]);
-	}
-	
-	for(i=0;i<rightSort.size();i++)
-	{
-		totalSort.push_back(rightSort[i]);
-	}
-	
-	return totalSort;
-}
-
+ 
 int main()
 {	
-	vector<string> randList;
-	srand(time(0));
+	vector<string> wordList;
 	fstream f;
 	f.open("words.txt");
 	string buffer;
 	getline(f, buffer);
-	int i;
+	int wordListLen = 1;
 	while(!f.eof())
 	{
-		randList.push_back(buffer);
+		wordList.push_back(buffer);
 		getline(f, buffer);
+		wordListLen++;
 	}
 	f.close();
 	
 	time_t temp = time(0);
-	//printArray(randList);
-	printArray(quickSort(randList));
-	
-	cout << "Quick sort time: " << time(0) - temp << endl;
+	vector<vector <string> > elementWordList;
+	for (int i=0;i<wordListLen;i++)
+	{
+		elementWordList = findCombo(wordList[i]);
+		for (int t=0;t<elementWordList.size();t++)
+		{
+			string curWord = "";
+			for (int m=0;m<elementWordList.at(t).size();m++)
+			{
+				curWord.append(elementWordList.at(t).at(m));
+			}
+			
+			if (lowerString(curWord).compare(lowerString(wordList[i])) != 0)
+			{
+				cout << "Problem" << endl;
+				cout << wordList[i] << endl;
+				cout << curWord << endl;
+				return 0;
+			}
+			else
+			{
+				cout << curWord << endl;
+			}
+		}
+	}
 	
 	return 0;
 }
- 
+
+
