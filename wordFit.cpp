@@ -207,7 +207,7 @@ int main()
 	
 	//For each word in the list run it through findCombo
 	vector<vector <string> > elementWordList;
-	for (int i=0;i<wordListLen;i++)
+	for (int i=0;i<wordListLen-1;i++)
 	{
 		//Print each word returned from findCombo
 		//Find combo returns a list of list of strings
